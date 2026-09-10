@@ -1,0 +1,6 @@
+# Keep LF in the repo. gradlew is a shell script and CRLF makes it unrunnable on the CI runner.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.jar binary
+*.png binary
+*.jks binary

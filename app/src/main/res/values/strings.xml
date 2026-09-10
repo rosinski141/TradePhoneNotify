@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TradeNotify</string>
+
+    <string name="channel_alarm_name">Signal alarms</string>
+    <string name="channel_alarm_desc">Full-volume alarm when a watched channel posts a trading signal.</string>
+    <string name="channel_status_name">Status</string>
+    <string name="channel_status_desc">Warnings when signal detection is not working.</string>
+
+    <string name="alarm_title">Signal — %1$s</string>
+    <string name="action_snooze">Snooze</string>
+    <string name="action_dismiss">Dismiss</string>
+</resources>
