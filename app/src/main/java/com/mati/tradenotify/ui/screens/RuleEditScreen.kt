@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -17,11 +18,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -91,19 +94,36 @@ fun RuleEditScreen(
         lastFiredAt = existing?.lastFiredAt ?: 0L,
     )
 
+    // A pinned bar with a back arrow. This screen hides the bottom tab strip, and its Save/Cancel
+    // buttons sit below the keyboard, so without this there is no visible way out — restoring the
+    // app onto this screen looked like the navigation bar had broken.
+    Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onDone) { Text("←  Back", fontSize = 16.sp) }
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    if (existing == null) "New rule" else "Edit rule",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        },
+    ) { barPadding ->
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(barPadding)
             .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text(
-            if (existing == null) "New rule" else "Edit rule",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-        )
 
         if (existing == null) {
             PresetPicker { preset ->
@@ -216,6 +236,7 @@ fun RuleEditScreen(
         }
 
         Spacer(Modifier.height(24.dp))
+    }
     }
 }
 
