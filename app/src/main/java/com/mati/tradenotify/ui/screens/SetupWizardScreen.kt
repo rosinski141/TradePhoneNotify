@@ -37,6 +37,8 @@ import com.mati.tradenotify.ui.MainViewModel
 import com.mati.tradenotify.ui.permissions.OemBatterySettings
 import com.mati.tradenotify.ui.permissions.PermissionItem
 import com.mati.tradenotify.ui.permissions.PermissionState
+import com.mati.tradenotify.ui.permissions.RestrictedSettings
+import com.mati.tradenotify.ui.permissions.startActivitySafely
 import com.mati.tradenotify.ui.permissions.rememberPermissionAction
 
 private data class WizardStep(
@@ -121,6 +123,43 @@ fun SetupWizardScreen(viewModel: MainViewModel, onFinish: () -> Unit) {
                         color = if (granted) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.SemiBold,
                     )
+                }
+            }
+
+            // Android 13+ greys out notification access for sideloaded apps and offers no hint
+            // about the overflow menu that unlocks it, so say it before they hit the wall.
+            if (step.permission.key == "listener" && !granted &&
+                RestrictedSettings.mayApply(context)
+            ) {
+                Spacer(Modifier.height(12.dp))
+                Card(
+                    Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(
+                            "If the switch is greyed out",
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF78350F),
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "Android blocks this setting for apps installed outside the Play " +
+                                "Store — it says \"Controlled by restricted setting\".\n\n" +
+                                "Open App info, tap ⋮ in the top-right corner, then " +
+                                "\"Allow restricted settings\". Come back here afterwards and the " +
+                                "switch will work.",
+                            fontSize = 13.sp,
+                            color = Color(0xFF78350F),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Button(
+                            onClick = {
+                                context.startActivitySafely(RestrictedSettings.appInfo(context))
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("Open App info") }
+                    }
                 }
             }
 

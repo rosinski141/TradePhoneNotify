@@ -10,7 +10,19 @@ vibration, screen on, full-screen dismiss/snooze over the lock screen.
 2. Open the downloaded file. Android will ask whether to allow installs from your browser — allow it.
 3. **If you see "Unsafe app blocked"**, tap **More details → Install anyway**. Play Protect shows this for every app that didn't come from the Play Store; it is not a warning about this app specifically.
 4. Open TradeNotify. A setup wizard walks you through the permissions one at a time — it won't let you skip the ones that matter.
-5. On the Status screen, press **Test alarm** to hear what a real signal sounds like.
+5. **If the notification-access switch is greyed out** and says *"Controlled by restricted setting"*, see below.
+6. On the Status screen, press **Test alarm** to hear what a real signal sounds like.
+
+### "Controlled by restricted setting"
+
+Android 13 and later block notification access for any app installed outside an app store. The
+switch is greyed out and nothing explains why. To unlock it:
+
+**Settings → Apps → TradeNotify → ⋮ (top-right) → Allow restricted settings**
+
+Then go back and turn notification access on. The setup wizard offers a direct **Open App info**
+button for this. Note that this affects installs from a browser or file manager; `adb install` does
+not trigger it, which is why it never shows up during development.
 
 Installing a newer APK over an existing copy keeps your rules and history. The app checks for new
 releases itself and offers a one-tap download from **Settings → Version**.

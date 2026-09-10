@@ -42,6 +42,8 @@ import com.mati.tradenotify.match.ChannelHealth
 import com.mati.tradenotify.ui.MainViewModel
 import com.mati.tradenotify.ui.permissions.PermissionItem
 import com.mati.tradenotify.ui.permissions.PermissionState
+import com.mati.tradenotify.ui.permissions.RestrictedSettings
+import com.mati.tradenotify.ui.permissions.startActivitySafely
 import com.mati.tradenotify.ui.permissions.rememberPermissionAction
 import com.mati.tradenotify.util.formatRelative
 
@@ -100,6 +102,25 @@ fun HomeScreen(
                     Spacer(Modifier.height(4.dp))
                     permissions.forEach { item ->
                         ChecklistRow(item, onFix)
+                    }
+
+                    val listenerBlocked = permissions
+                        .firstOrNull { it.key == "listener" }?.granted == false &&
+                        RestrictedSettings.mayApply(context)
+                    if (listenerBlocked) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "Greyed out and says \"Controlled by restricted setting\"? Open App " +
+                                "info, tap ⋮ top-right, then \"Allow restricted settings\".",
+                            fontSize = 12.sp,
+                            color = Color(0xFF92400E),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                context.startActivitySafely(RestrictedSettings.appInfo(context))
+                            },
+                        ) { Text("Open App info") }
                     }
                 }
             }
