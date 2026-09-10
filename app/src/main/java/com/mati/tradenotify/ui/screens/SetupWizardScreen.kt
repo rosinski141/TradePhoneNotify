@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -17,7 +18,9 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,9 +87,17 @@ fun SetupWizardScreen(viewModel: MainViewModel, onFinish: () -> Unit) {
     val canAdvance = granted || !required
     val isLast = index == steps.lastIndex
 
+    // The wizard renders outside the Scaffold, so nothing else supplies a background or a content
+    // colour — without this Surface the text falls back to black on a dark window, and the first
+    // line sits under the status bar.
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .safeDrawingPadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
     ) {
@@ -230,6 +241,7 @@ fun SetupWizardScreen(viewModel: MainViewModel, onFinish: () -> Unit) {
             },
             modifier = Modifier.fillMaxWidth(),
         ) { Text("Skip setup for now") }
+    }
     }
 }
 

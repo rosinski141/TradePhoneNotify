@@ -50,21 +50,24 @@ object OemBatterySettings {
         )
 
     /** Whether this phone has a vendor auto-launch manager worth offering a shortcut to. */
-    fun hasOemLauncherManager(): Boolean = oemComponents().isNotEmpty()
+    fun hasOemLauncherManager(): Boolean = oemIntents().isNotEmpty()
 
     /**
      * Opens the vendor's auto-launch / protected-apps screen.
      *
-     * These component names are undocumented and vary by model and firmware, so each is simply
-     * attempted in turn — a missing one throws and we move on — ending at the app's own details
-     * page, which always exists.
+     * Verified component names are tried first, then the vendor's declared action as a fallback.
+     * The action is more durable across firmware, but on HONOR more than one activity claims it,
+     * so leading with it drops the user into an app-chooser dialog instead of the screen they
+     * asked for. Each candidate is simply attempted in turn — a missing one throws and we move on
+     * — ending at the app's own details page, which always exists.
      */
     fun openOemLauncherManager(context: Context) {
-        for (component in oemComponents()) {
-            val intent = Intent().setComponent(component).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            val launched = runCatching { context.startActivity(intent) }.isSuccess
+        for (intent in oemIntents()) {
+            val launched = runCatching {
+                context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            }.isSuccess
             if (launched) {
-                Log.i(TAG, "Opened OEM launcher manager: $component")
+                Log.i(TAG, "Opened OEM launcher manager via $intent")
                 return
             }
         }
@@ -72,20 +75,47 @@ object OemBatterySettings {
         context.startActivitySafely(appDetails(context))
     }
 
+    private fun oemIntents(): List<Intent> =
+        oemComponents().map { Intent().setComponent(it) } + oemActions().map { Intent(it) }
+
+    /**
+     * Vendor intent actions, verified present on the device where possible.
+     *
+     * `hihonor.intent.action.HSM_STARTUPAPP_MANAGER` was read off a HONOR Magic7 Pro running
+     * MagicOS on Android 16, where the target activity declares it with category DEFAULT.
+     */
+    private fun oemActions(): List<String> =
+        when (Build.MANUFACTURER.lowercase()) {
+            "honor" -> listOf(
+                "hihonor.intent.action.HSM_STARTUPAPP_MANAGER",
+                "hihonor.intent.action.HSM_BOOTAPP_MANAGER",
+                "huawei.intent.action.HSM_STARTUPAPP_MANAGER",
+            )
+
+            "huawei" -> listOf(
+                "huawei.intent.action.HSM_STARTUPAPP_MANAGER",
+                "huawei.intent.action.HSM_BOOTAPP_MANAGER",
+            )
+
+            else -> emptyList()
+        }
+
     private fun oemComponents(): List<ComponentName> =
         when (Build.MANUFACTURER.lowercase()) {
             "honor" -> listOf(
-                // HONOR split from Huawei, so both namespaces are in play depending on firmware.
+                // Read off a HONOR Magic7 Pro (MagicOS / Android 16). HONOR split from Huawei but
+                // renamed the classes too, so the package AND the class use the hihonor namespace.
                 ComponentName(
                     "com.hihonor.systemmanager",
-                    "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+                    "com.hihonor.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
                 ),
                 ComponentName(
                     "com.hihonor.systemmanager",
-                    "com.huawei.systemmanager.appcontrol.activity.StartupAppControlActivity",
+                    "com.hihonor.systemmanager.appcontrol.activity.StartupAppControlActivity",
                 ),
+                // Older HONOR firmware still carried Huawei's class names.
                 ComponentName(
-                    "com.huawei.systemmanager",
+                    "com.hihonor.systemmanager",
                     "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
                 ),
             )
