@@ -35,43 +35,6 @@ recreated automatically.
 
 ---
 
-## Automatic updates with Obtainium
-
-A sideloaded app has no store behind it, so it never updates itself.
-[Obtainium](https://github.com/ImranR98/Obtainium) watches this repo's releases and offers the
-update as soon as one is published — worth setting up if you'd rather not check by hand.
-
-**Add it by URL** (works everywhere): open Obtainium → **Add App** → paste
-
-```
-https://github.com/rosinski141/TradePhoneNotify
-```
-
-**Or use the config link** from the phone, which pre-fills everything (Obtainium shows the raw
-config for confirmation before adding anything):
-
-```
-obtainium://app/%7B%22id%22%3A%22com.mati.tradenotify%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2Frosinski141%2FTradePhoneNotify%22%2C%22author%22%3A%22rosinski141%22%2C%22name%22%3A%22TradeNotify%22%7D
-```
-
-That link is this config, URL-encoded:
-
-```json
-{"id":"com.mati.tradenotify","url":"https://github.com/rosinski141/TradePhoneNotify","author":"rosinski141","name":"TradeNotify"}
-```
-
-> **Obtainium does not necessarily remove the "Controlled by restricted setting" step.** Whether
-> Android applies that block depends on the installer being session-based, and installing through
-> another app does not guarantee it — F-Droid's client hits the same restriction
-> ([fdroidclient#2680](https://gitlab.com/fdroid/fdroidclient/-/work_items/2680)). Assume you still
-> need **App info → ⋮ → Allow restricted settings** once, on first install. What Obtainium reliably
-> solves is *updates*, not that first grant.
-
-The app also checks for new releases itself — **Settings → Version** — so Obtainium is a
-convenience, not a requirement.
-
----
-
 ## How it detects signals
 
 TradeNotify reads the notifications that the Telegram app on your phone already produces, via
