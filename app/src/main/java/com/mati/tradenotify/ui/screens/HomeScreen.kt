@@ -42,6 +42,7 @@ import com.mati.tradenotify.match.ChannelHealth
 import com.mati.tradenotify.ui.MainViewModel
 import com.mati.tradenotify.ui.permissions.PermissionItem
 import com.mati.tradenotify.ui.permissions.PermissionState
+import com.mati.tradenotify.ui.permissions.rememberPermissionAction
 import com.mati.tradenotify.util.formatRelative
 
 @Composable
@@ -55,6 +56,12 @@ fun HomeScreen(
     val rules by viewModel.rules.collectAsStateWithLifecycle()
     val events by viewModel.events.collectAsStateWithLifecycle()
     val channels by viewModel.channels.collectAsStateWithLifecycle()
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
+
+    val onFix = rememberPermissionAction(
+        askedBefore = settings.askedPostNotifications,
+        onAsked = { viewModel.markAskedPostNotifications() },
+    )
 
     val quietRules = remember(rules, channels) { ChannelHealth.findQuiet(rules, channels) }
 
@@ -92,7 +99,7 @@ fun HomeScreen(
                     Text("Setup", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     Spacer(Modifier.height(4.dp))
                     permissions.forEach { item ->
-                        ChecklistRow(item) { intent -> safeStart(context, intent) }
+                        ChecklistRow(item, onFix)
                     }
                 }
             }
@@ -266,7 +273,7 @@ private fun StatusCard(ready: Boolean, readyButDisconnected: Boolean, enabledRul
 }
 
 @Composable
-private fun ChecklistRow(item: PermissionItem, onFix: (Intent) -> Unit) {
+private fun ChecklistRow(item: PermissionItem, onFix: (PermissionItem) -> Unit) {
     Column(Modifier.padding(vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -285,8 +292,8 @@ private fun ChecklistRow(item: PermissionItem, onFix: (Intent) -> Unit) {
                 fontSize = 14.sp,
                 modifier = Modifier.weight(1f),
             )
-            if (!item.granted && item.fixIntent != null) {
-                TextButton(onClick = { onFix(item.fixIntent) }) { Text("Fix") }
+            if (!item.granted && (item.fixIntent != null || item.runtimePermission != null)) {
+                TextButton(onClick = { onFix(item) }) { Text("Fix") }
             }
         }
         if (!item.granted) {

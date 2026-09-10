@@ -22,6 +22,11 @@ data class PermissionItem(
     val required: Boolean,
     /** Intent that takes the user to the screen where they can grant it, if there is one. */
     val fixIntent: Intent?,
+    /**
+     * Set for grants that are a runtime permission rather than a Settings screen, so the UI can
+     * show the system dialog first and only fall back to Settings once Android stops asking.
+     */
+    val runtimePermission: String? = null,
 )
 
 /**
@@ -71,6 +76,11 @@ object PermissionState {
             granted = granted,
             required = true,
             fixIntent = appNotificationSettings(context),
+            runtimePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.POST_NOTIFICATIONS
+            } else {
+                null
+            },
         )
     }
 

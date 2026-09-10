@@ -29,6 +29,14 @@ data class AppSettings(
     val alarmVolumePercent: Int = 100,
     /** False until the first-run wizard has been completed or skipped. */
     val setupComplete: Boolean = false,
+    /**
+     * Whether the POST_NOTIFICATIONS dialog has been shown at least once.
+     *
+     * Android silently auto-denies a permission the user has refused twice, and some OEM
+     * builds surface that as a "denied access to this permission" toast. Knowing we have
+     * asked before lets us send the user to Settings instead of triggering that.
+     */
+    val askedPostNotifications: Boolean = false,
 )
 
 class SettingsStore(private val context: Context) {
@@ -44,6 +52,7 @@ class SettingsStore(private val context: Context) {
         val FORCE_VOLUME = booleanPreferencesKey("force_alarm_volume")
         val VOLUME_PCT = intPreferencesKey("alarm_volume_percent")
         val SETUP_DONE = booleanPreferencesKey("setup_complete")
+        val ASKED_POST = booleanPreferencesKey("asked_post_notifications")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p ->
@@ -59,6 +68,7 @@ class SettingsStore(private val context: Context) {
             forceAlarmVolume = p[Keys.FORCE_VOLUME] ?: defaults.forceAlarmVolume,
             alarmVolumePercent = p[Keys.VOLUME_PCT] ?: defaults.alarmVolumePercent,
             setupComplete = p[Keys.SETUP_DONE] ?: defaults.setupComplete,
+            askedPostNotifications = p[Keys.ASKED_POST] ?: defaults.askedPostNotifications,
         )
     }
 
@@ -83,6 +93,8 @@ class SettingsStore(private val context: Context) {
     suspend fun setForceAlarmVolume(value: Boolean) = edit { it[Keys.FORCE_VOLUME] = value }
 
     suspend fun setSetupComplete(value: Boolean) = edit { it[Keys.SETUP_DONE] = value }
+
+    suspend fun setAskedPostNotifications() = edit { it[Keys.ASKED_POST] = true }
 
     suspend fun setAlarmVolumePercent(value: Int) = edit {
         it[Keys.VOLUME_PCT] = value.coerceIn(10, 100)

@@ -31,10 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mati.tradenotify.ingest.ListenerControl
 import com.mati.tradenotify.ui.MainViewModel
 import com.mati.tradenotify.ui.permissions.PermissionItem
 import com.mati.tradenotify.ui.permissions.PermissionState
+import com.mati.tradenotify.ui.permissions.rememberPermissionAction
 
 private data class WizardStep(
     val title: String,
@@ -61,6 +63,12 @@ fun SetupWizardScreen(viewModel: MainViewModel, onFinish: () -> Unit) {
         onPauseOrDispose { }
     }
     val permissions = remember(refreshKey) { PermissionState.collect(context) }
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
+
+    val onFix = rememberPermissionAction(
+        askedBefore = settings.askedPostNotifications,
+        onAsked = { viewModel.markAskedPostNotifications() },
+    )
 
     val steps = remember(permissions) { buildSteps(permissions) }
     var index by remember { mutableIntStateOf(0) }
@@ -113,15 +121,21 @@ fun SetupWizardScreen(viewModel: MainViewModel, onFinish: () -> Unit) {
                 }
             }
 
-            if (!granted && step.permission.fixIntent != null) {
+            val isRuntime = step.permission.runtimePermission != null
+            if (!granted && (step.permission.fixIntent != null || isRuntime)) {
                 Spacer(Modifier.height(12.dp))
                 Button(
-                    onClick = { safeStart(context, step.permission.fixIntent) },
+                    onClick = { onFix(step.permission) },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Open settings") }
+                ) { Text(if (isRuntime) "Allow" else "Open settings") }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Come back here afterwards — this page rechecks itself automatically.",
+                    if (isRuntime) {
+                        "If no dialog appears, Android has stopped asking — you'll be taken to " +
+                            "Settings instead."
+                    } else {
+                        "Come back here afterwards — this page rechecks itself automatically."
+                    },
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

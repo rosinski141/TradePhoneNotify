@@ -1,13 +1,10 @@
 package com.mati.tradenotify.ui
 
-import android.Manifest
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -63,8 +60,6 @@ private fun AppRoot(viewModel: MainViewModel = viewModel()) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val setupComplete by viewModel.setupComplete.collectAsStateWithLifecycle()
-
-    RequestNotificationPermission()
 
     LaunchedEffect(Unit) { viewModel.checkForUpdate() }
 
@@ -153,17 +148,5 @@ private fun AppRoot(viewModel: MainViewModel = viewModel()) {
             composable("history") { HistoryScreen(viewModel) }
             composable("settings") { SettingsScreen(viewModel) }
         }
-    }
-}
-
-/** Asked once on first launch; the checklist on Home covers it if the user declines. */
-@Composable
-private fun RequestNotificationPermission() {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { }
-    LaunchedEffect(Unit) {
-        launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 }

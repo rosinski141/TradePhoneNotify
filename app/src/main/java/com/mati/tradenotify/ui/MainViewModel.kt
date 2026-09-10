@@ -86,6 +86,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         container.settings.setSetupComplete(value)
     }
 
+    fun markAskedPostNotifications() = viewModelScope.launch {
+        container.settings.setAskedPostNotifications()
+    }
+
     // ---- backup ----
 
     fun exportRulesTo(uri: Uri, onDone: (Boolean) -> Unit) = viewModelScope.launch {
