@@ -34,6 +34,7 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mati.tradenotify.ingest.ListenerControl
 import com.mati.tradenotify.ui.MainViewModel
+import com.mati.tradenotify.ui.permissions.OemBatterySettings
 import com.mati.tradenotify.ui.permissions.PermissionItem
 import com.mati.tradenotify.ui.permissions.PermissionState
 import com.mati.tradenotify.ui.permissions.rememberPermissionAction
@@ -42,6 +43,8 @@ private data class WizardStep(
     val title: String,
     val body: String,
     val permission: PermissionItem?,
+    /** Shows a shortcut into the vendor's auto-launch manager, which has no standard intent. */
+    val oemShortcut: Boolean = false,
 )
 
 /**
@@ -142,6 +145,14 @@ fun SetupWizardScreen(viewModel: MainViewModel, onFinish: () -> Unit) {
             }
         }
 
+        if (step.oemShortcut && OemBatterySettings.hasOemLauncherManager()) {
+            Spacer(Modifier.height(16.dp))
+            Button(
+                onClick = { OemBatterySettings.openOemLauncherManager(context) },
+                modifier = Modifier.fillMaxWidth(),
+            ) { Text("Open app launch settings") }
+        }
+
         Spacer(Modifier.height(32.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (index > 0) {
@@ -208,6 +219,7 @@ private fun buildSteps(permissions: List<PermissionItem>): List<WizardStep> {
             "2. Battery management. " + oemHint() + "\n\n" +
             "The Status screen warns you if a channel goes quiet for a day.",
         permission = null,
+        oemShortcut = true,
     )
 
     steps += WizardStep(

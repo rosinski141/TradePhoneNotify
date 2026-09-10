@@ -134,16 +134,29 @@ object PermissionState {
     private fun batteryOptimization(context: Context): PermissionItem {
         val pm = context.getSystemService(PowerManager::class.java)
         val ignoring = pm?.isIgnoringBatteryOptimizations(context.packageName) ?: false
+        // Being on the allowlist and being Restricted are independent: an app can be both, and
+        // Restricted still curtails background work. Only clear when neither applies.
+        val restricted = OemBatterySettings.isRestricted(context)
+
         return PermissionItem(
             key = "battery",
-            title = "Unrestricted battery",
-            why = "Stops the system from unbinding the listener while the phone is idle.",
-            granted = ignoring,
+            title = if (restricted) "Battery use is Restricted" else "Unrestricted battery",
+            why = if (restricted) {
+                "Android has put TradeNotify in the Restricted bucket, which stops it running in " +
+                    "the background — alarms will be missed. Open App info → Battery and choose " +
+                    "Unrestricted."
+            } else {
+                "Stops the system from unbinding the listener while the phone is idle."
+            },
+            granted = ignoring && !restricted,
             required = false,
-            fixIntent = Intent(
-                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-                Uri.parse("package:${context.packageName}"),
-            ),
+            // The allowlist dialog cannot clear a Restricted bucket, so when that's the problem
+            // send the user to App info, where the Unrestricted option actually lives.
+            fixIntent = if (restricted) {
+                OemBatterySettings.appDetails(context)
+            } else {
+                OemBatterySettings.ignoreBatteryOptimizations(context)
+            },
         )
     }
 

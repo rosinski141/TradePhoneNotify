@@ -43,6 +43,7 @@ import com.mati.tradenotify.data.TelegramPackages
 import com.mati.tradenotify.match.QuietHours
 import com.mati.tradenotify.ui.ImportResult
 import com.mati.tradenotify.ui.MainViewModel
+import com.mati.tradenotify.ui.permissions.OemBatterySettings
 
 @Composable
 fun SettingsScreen(viewModel: MainViewModel) {
@@ -294,6 +295,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 )
                 Spacer(Modifier.height(10.dp))
                 Text(oemBatteryAdvice(), fontSize = 13.sp)
+                if (OemBatterySettings.hasOemLauncherManager()) {
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = { OemBatterySettings.openOemLauncherManager(context) }) {
+                        Text("Open app launch settings")
+                    }
+                }
             }
         }
 
