@@ -16,14 +16,19 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          # Full history: versionCode is derived from the commit count, and a shallow
+          # clone would make every release versionCode 1 — Android then refuses to
+          # install a new build over an older one.
+          fetch-depth: 0
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Work out the version
         id: version
@@ -70,7 +75,7 @@ jobs:
         run: rm -f tradenotify-release.jks keystore.properties
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: TradeNotify ${{ steps.version.outputs.name }}
