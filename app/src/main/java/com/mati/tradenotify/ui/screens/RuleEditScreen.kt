@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -93,6 +94,7 @@ fun RuleEditScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -130,18 +132,17 @@ fun RuleEditScreen(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        // The match mode has no effect on a blank pattern, so offering it would only suggest a
-        // choice that changes nothing.
-        if (channel.isNotBlank()) {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                MatchMode.entries.forEachIndexed { index, entry ->
-                    SegmentedButton(
-                        selected = mode == entry,
-                        onClick = { mode = entry },
-                        shape = SegmentedButtonDefaults.itemShape(index, MatchMode.entries.size),
-                    ) {
-                        Text(entry.name.lowercase().replaceFirstChar { it.uppercase() })
-                    }
+        // The match mode does nothing to a blank pattern, so it is disabled rather than hidden —
+        // removing the row would make the whole form jump the moment the first character is typed.
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            MatchMode.entries.forEachIndexed { index, entry ->
+                SegmentedButton(
+                    selected = mode == entry,
+                    onClick = { mode = entry },
+                    enabled = channel.isNotBlank(),
+                    shape = SegmentedButtonDefaults.itemShape(index, MatchMode.entries.size),
+                ) {
+                    Text(entry.name.lowercase().replaceFirstChar { it.uppercase() })
                 }
             }
         }

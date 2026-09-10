@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -101,7 +102,12 @@ private fun AppRoot(viewModel: MainViewModel = viewModel()) {
         NavHost(
             navController = navController,
             startDestination = "home",
-            modifier = Modifier.padding(padding),
+            // consumeWindowInsets marks these insets as handled here, so an imePadding() on a
+            // screen below applies the keyboard inset once rather than stacking on top of the
+            // padding Scaffold already added.
+            modifier = Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding),
         ) {
             composable("home") {
                 HomeScreen(
